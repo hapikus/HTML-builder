@@ -13,7 +13,7 @@ let textTxtPath = path.join(__dirname, fileName);
 let exitMsg = 'See you next time!';
 let writeStream = fs.createWriteStream(textTxtPath);
 
-console.log(textTxtPath);
+// console.log(textTxtPath);
 fsPromise.writeFile(textTxtPath, '')
   .then(() => {
     console.log('Введите текст:');
