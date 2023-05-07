@@ -70,6 +70,15 @@ async function cssReader() {
 let assetsFolderName = 'assets';
 let assetsFolderPath = path.join(__dirname, assetsFolderName);
 
+async function getFilesArr(dir) {
+  const dirElements = await fsPromise.readdir(dir, { withFileTypes: true });
+  const files = await Promise.all(dirElements.map((dirElem) => {
+    const res = path.resolve(dir, dirElem.name);
+    return dirElem.isDirectory() ? getFilesArr(res) : res;
+  }));
+  return files.flat();
+}
+
 // Project
 let projectFolderName = 'project-dist';
 let projectFolderPath = path.join(__dirname, projectFolderName);
@@ -90,6 +99,18 @@ Promise.all([
   .then(() => fsPromise.mkdir(projectFolderPath, {recursive: true}))
   .then(() => fsPromise.writeFile(path.join(projectFolderPath, HTMLProjectFileName), HTMLDataString))
   .then(() => cssReader())
-  .then(() => fsPromise.cp(
-    assetsFolderPath, path.join(__dirname, projectFolderName, assetsFolderName),
-    {recursive: true}));
+  .catch(err => err);
+
+fsPromise.mkdir(projectFolderPath, {recursive: true})
+  .then(() => getFilesArr(assetsFolderPath))
+  .then(files => {
+    files.forEach(file => {
+      let copyFilePath = file.replace(
+        `${path.sep}${assetsFolderName}${path.sep}`,
+        `${path.sep}${projectFolderName}${path.sep}${assetsFolderName}${path.sep}`
+      );
+      fsPromise.mkdir(path.parse(copyFilePath).dir, {recursive: true})
+        .then(()=>fsPromise.copyFile(file, copyFilePath))
+        .catch(err => err);
+    });
+  });
