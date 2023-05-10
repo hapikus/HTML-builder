@@ -11,7 +11,9 @@ fsPromise.readdir(directoryPath)
       fsPromise.lstat(filePath)
         .then(stat => {
           if (stat.isFile()) {
-            let fileInfo = [...file.split('.'), `${Math.floor(stat.size/1024)} kb`];
+            let fileName = file.split('.').slice(0, -1).join('.');
+            let fileExtension = file.split('.').at(-1);
+            let fileInfo = [fileName, fileExtension, `${Math.floor(stat.size/1024)} kb`];
             console.log(fileInfo.join(' -- '));
           }
         });
