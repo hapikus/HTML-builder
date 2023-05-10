@@ -101,7 +101,8 @@ Promise.all([
   .then(() => cssReader())
   .catch(err => err);
 
-fsPromise.mkdir(projectFolderPath, {recursive: true})
+fsPromise.rm(path.join(projectFolderPath, assetsFolderName), { recursive: true, force: true})
+  .then(() => fsPromise.mkdir(projectFolderPath, {recursive: true}))
   .then(() => getFilesArr(assetsFolderPath))
   .then(files => {
     files.forEach(file => {
