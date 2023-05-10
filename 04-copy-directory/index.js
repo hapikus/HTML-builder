@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const fsPromise = require('fs/promises');
 
 let folderName = 'files';
@@ -15,13 +16,16 @@ async function getFilesArr(dir) {
   return files.flat();
 }
 
-fsPromise.mkdir(copyFolderPath, {recursive: true})
-  .then(() => getFilesArr(folderPath))
-  .then(arr => {
-    arr.forEach(file => {
-      let copyFilePath = file.replace(`${path.sep}${folderName}${path.sep}`, `${path.sep}${copyFolderName}${path.sep}`);
-      fsPromise.mkdir(path.parse(copyFilePath).dir, {recursive: true})
-        .then(()=>fsPromise.copyFile(file, copyFilePath))
-        .catch(err => err);        
-    });
+fsPromise.rm(copyFolderPath, { recursive: true, force: true})
+  .then(() => {
+    fsPromise.mkdir(copyFolderPath, {recursive: true})
+      .then(() => getFilesArr(folderPath))
+      .then(arr => {
+        arr.forEach(file => {
+          let copyFilePath = file.replace(`${path.sep}${folderName}${path.sep}`, `${path.sep}${copyFolderName}${path.sep}`);
+          fsPromise.mkdir(path.parse(copyFilePath).dir, {recursive: true})
+            .then(()=>fsPromise.copyFile(file, copyFilePath))
+            .catch(err => err);
+        });
+      });
   });
